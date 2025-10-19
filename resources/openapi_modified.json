@@ -1,0 +1,152 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Fleet Management Simple Metrics Server",
+    "description": "Simple and correct implementation of the Fleet Management Metrics Coding Assessment",
+    "contact": {
+      "name": "API Support",
+      "url": "http://www.example.com/support",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "None",
+      "url": "https://safely-you.com"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:6733/api/v1",
+      "description": "local server"
+    }
+  ],
+  "paths": {
+    "/devices/{device_id}/heartbeat": {
+      "post": {
+        "description": "Register a heartbeat from a device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceIDPathParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "the request was completed successfully" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/devices/{device_id}/stats": {
+      "post": {
+        "description": "Add per device statistics",
+        "parameters": [
+          { "$ref": "#/components/parameters/DeviceIDPathParam" }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UploadStatsRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "the request was completed successfully" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "get": {
+        "description": "Return device stats",
+        "parameters": [
+          { "$ref": "#/components/parameters/DeviceIDPathParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device statistics",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetDeviceStatsResponse" }
+              }
+            }
+          },
+          "204": { "description": "the request was completed successfully" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "DeviceIDPathParam": {
+        "name": "device_id",
+        "in": "path",
+        "description": "ID of a device to register heartbeat with",
+        "required": true,
+        "schema": { "type": "string" }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Device not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/NotFoundResponse" }
+          }
+        }
+      },
+      "Error": {
+        "description": "Server Error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "HeartbeatRequest": {
+        "type": "object",
+        "required": ["sent_at"],
+        "properties": {
+          "sent_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UploadStatsRequest": {
+        "type": "object",
+        "required": ["sent_at", "upload_time"],
+        "properties": {
+          "sent_at": { "type": "string", "format": "date-time" },
+          "upload_time": { "type": "integer", "description": "nanoseconds to upload" }
+        }
+      },
+      "GetDeviceStatsResponse": {
+        "type": "object",
+        "required": ["avg_upload_time", "uptime"],
+        "properties": {
+          "avg_upload_time": { "type": "string", "description": "time duration string" },
+          "uptime": { "type": "number", "format": "double", "description": "uptime %" }
+        }
+      },
+      "NotFoundResponse": {
+        "type": "object",
+        "required": ["msg"],
+        "properties": { "msg": { "type": "string" } }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["msg"],
+        "properties": { "msg": { "type": "string" } }
+      }
+    }
+  }
+}
